@@ -6,38 +6,66 @@ import shutil
 from pathlib import Path
 
 def find_feishu_adapter() -> Path:
-    """自动识别飞书适配器文件路径"""
-    # 优先找当前虚拟环境下的路径
-    venv_path = os.environ.get("VIRTUAL_ENV")
-    search_paths = []
-    
-    if venv_path:
-        search_paths.append(Path(venv_path) / "lib")
-    
-    # 找用户目录下的hermes源码路径
-    search_paths.append(Path.home() / ".hermes" / "hermes-agent")
-    
-    # 全局安装路径
-    search_paths.append(Path("/usr/local/lib"))
-    search_paths.append(Path("/usr/lib"))
+    """自动识别飞书适配器文件路径。
 
-    for base_path in search_paths:
+    搜索范围严格限制在当前虚拟环境和用户目录下的 Hermes 安装路径，
+    不会递归扫描系统库目录（/usr/lib、/usr/local/lib），避免性能问题
+    和意外的文件修改。
+    """
+    search_roots: list[Path] = []
+
+    # 1. 当前虚拟环境
+    venv_path = os.environ.get("VIRTUAL_ENV")
+    if venv_path:
+        search_roots.append(Path(venv_path) / "lib")
+
+    # 2. 用户目录下的 Hermes 源码路径
+    search_roots.append(Path.home() / ".hermes" / "hermes-agent")
+
+    # 3. 用户级 site-packages（pip install --user 安装位置）
+    search_roots.append(Path.home() / ".local" / "lib")
+
+    # 4. 当前工作目录（开发模式下从源码运行）
+    search_roots.append(Path.cwd())
+
+    for base_path in search_roots:
         if not base_path.exists():
             continue
-            
+
         # 两种可能的路径结构
         for adapter_path in base_path.rglob("hermes_gateway_plugins/feishu/adapter.py"):
             if adapter_path.exists():
                 return adapter_path
-                
+
         for adapter_path in base_path.rglob("plugins/platforms/feishu/adapter.py"):
             if adapter_path.exists():
                 return adapter_path
-                
-    raise FileNotFoundError("未找到飞书适配器文件，请确认Hermes已安装并对接飞书")
+
+    raise FileNotFoundError(
+        "未找到飞书适配器文件。已搜索以下路径：\n  - "
+        + "\n  - ".join(str(p) for p in search_roots if p.exists())
+        + "\n请确认 Hermes 已安装并对接飞书，或在使用此脚本前激活正确的虚拟环境。"
+    )
+
+def _confirm(prompt: str) -> bool:
+    """交互式确认。在非 TTY 环境下默认通过（用于自动化脚本）。"""
+    if not sys.stdin.isatty():
+        return True
+    try:
+        answer = input(f"{prompt} [y/N]: ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        return False
+    return answer in ("y", "yes")
+
 
 def patch_adapter(adapter_path: Path) -> bool:
     """打补丁"""
+    print(f"⚠️  即将修改文件：{adapter_path}")
+    print("   原文件会备份为 *.py.bak.table_card，可用 --rollback 恢复。")
+    if not _confirm("   确认继续？"):
+        print("ℹ️  已取消")
+        return False
+
     content = adapter_path.read_text(encoding="utf-8")
     
     # 备份原文件

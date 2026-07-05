@@ -29,6 +29,20 @@ except ImportError:
     except ImportError as e:
         _import_error = str(e)
 
+
+class _FallbackBase:
+    """Hermes 未安装时的占位基类。
+
+    让模块在无 Hermes 环境下也能正常 import（避免 pip install 后
+    entry point 加载失败），register() 会在调用时再次校验。
+    """
+
+    def __init__(self, cfg: Any = None) -> None:
+        self.cfg = cfg
+
+
+_BASE = _OriginalFeishuAdapter if _OriginalFeishuAdapter is not None else _FallbackBase
+
 # 优化的表格检测正则：支持任意位置、任意缩进的表格
 MARKDOWN_TABLE_RE = re.compile(r"\|.*\|\s*\n\s*\|\s*[-:| ]+\|", re.MULTILINE)
 
@@ -39,7 +53,7 @@ _config: dict = {
 }
 
 
-class FeishuTableCardAdapter(_OriginalFeishuAdapter):
+class FeishuTableCardAdapter(_BASE):
     """继承原飞书适配器，仅重写消息构建逻辑，无侵入扩展"""
 
     def _build_outbound_payload(self, content: str) -> Tuple[str, str]:
