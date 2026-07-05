@@ -13,14 +13,12 @@
 
 ## 📦 安装
 ### 方式1：直接从GitHub安装（推荐）
-> ⚠️ 请替换下面链接中的 `lukaisheng1203` 为你的GitHub用户名
 ```bash
 hermes plugins install git+https://github.com/lukaisheng1203/hermes-plugin-feishu-table-card.git --enable
 ```
 安装完成后**只需重启网关即可生效**，无需手动编辑 config.yaml。
 
 ### 方式2：本地安装
-> ⚠️ 请替换下面链接中的 `lukaisheng1203` 为你的GitHub用户名
 ```bash
 git clone https://github.com/lukaisheng1203/hermes-plugin-feishu-table-card.git
 cd hermes-plugin-feishu-table-card
