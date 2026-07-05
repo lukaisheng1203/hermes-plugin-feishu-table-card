@@ -1,0 +1,9 @@
+name: feishu_table_card
+version: 1.1.0
+description: "飞书markdown表格自动转卡片渲染插件，完美对齐OpenClaw体验，无侵入兼容原逻辑。安装时使用 --enable 参数即可自动启用，无需手动编辑 config.yaml。"
+author: Hermes Community
+kind: standalone
+platforms:
+  - linux
+  - macos
+  - windows

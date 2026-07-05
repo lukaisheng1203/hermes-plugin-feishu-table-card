@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-plugin-feishu-table-card"
+version = "1.1.0"
+authors = [
+  { name="Hermes Community", email="community@hermes-agent.nousresearch.com" }
+]
+description = "Hermes飞书平台扩展插件：自动将包含markdown表格的消息转为互动卡片渲染，完美对齐OpenClaw体验，无侵入兼容原逻辑"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+keywords = ["hermes", "hermes-plugin", "feishu", "lark", "markdown-table", "飞书"]
+
+[project.entry-points."hermes.plugins"]
+feishu_table_card = "__init__:register"
